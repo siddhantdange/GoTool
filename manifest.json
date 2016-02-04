@@ -10,7 +10,10 @@
 	  "background": {
 	    "scripts": ["background.js"]
 	  },
-	  "version": "1.0",
+		"permissions": [
+      "storage"
+    ],
+	  "version": "0.5",
 	  "minimum_chrome_version": "9",
 	  "manifest_version": 2
 }
