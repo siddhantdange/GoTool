@@ -47,11 +47,15 @@ function getShortcut(name, callback) {
   });
 }
 
-chrome.omnibox.onInputEntered.addListener(function(text) {
-  saveShortcut('wheee', 'http://apple.com', function() {
-    console.log('saved!');
-  }, null);
+function getAllShortcuts(callback) {
+  return chrome.storage.sync.get(null, function(url_dict) {
+    if (callback) {
+      callback(url_dict);
+    }
+  });
+}
 
+chrome.omnibox.onInputEntered.addListener(function(text) {
   getShortcut(text, function(url_back){
     url = url_back;
     if (!url) {
