@@ -1,0 +1,16 @@
+{
+	  "name": "GoTool",
+	  "description": "quicker bookmarks!",
+	  "omnibox": {
+	    "keyword": "go"
+    },
+	  "icons": {
+	    "16": "icon.png"
+	  },
+	  "background": {
+	    "scripts": ["background.js"]
+	  },
+	  "version": "1.0",
+	  "minimum_chrome_version": "9",
+	  "manifest_version": 2
+}
