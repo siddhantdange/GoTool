@@ -13,6 +13,9 @@
 		"permissions": [
       "storage"
     ],
+		"web_accessible_resources": [
+    	"templates/*"
+  	],
 	  "version": "0.5",
 	  "minimum_chrome_version": "9",
 	  "manifest_version": 2
