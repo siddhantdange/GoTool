@@ -12,9 +12,9 @@ function navigate(url) {
   });
 }
 
-function saveShortcut(name, url, success, error) {
+function saveShortcut(title, url, success, error) {
 
-   if (!name || !url) {
+   if (!title || !url) {
      if (error) {
        error('Error: No value specified');
      }
@@ -23,7 +23,7 @@ function saveShortcut(name, url, success, error) {
    }
 
    var pack = {};
-   pack[name] = url;
+   pack[title] = url;
    chrome.storage.sync.set(pack, function() {
      if (success) {
        success();
@@ -31,8 +31,8 @@ function saveShortcut(name, url, success, error) {
    });
 }
 
-function getShortcut(name, callback) {
-  return chrome.storage.sync.get(name, function(url_dict) {
+function getShortcut(title, callback) {
+  return chrome.storage.sync.get(title, function(url_dict) {
     var len = Object.keys(url_dict).length;
     if (!len) {
       if (callback) {
@@ -42,7 +42,7 @@ function getShortcut(name, callback) {
     }
 
     if (callback) {
-      callback(url_dict[name]);
+      callback(url_dict[title]);
     }
   });
 }
@@ -55,8 +55,8 @@ function getAllShortcuts(callback) {
   });
 }
 
-function removeShortcut(name, callback) {
-  return chrome.storage.sync.remove(name, callback);
+function removeShortcut(title, callback) {
+  return chrome.storage.sync.remove(title, callback);
 }
 
 chrome.omnibox.onInputEntered.addListener(function(text) {
