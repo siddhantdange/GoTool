@@ -55,12 +55,20 @@ function getAllShortcuts(callback) {
   });
 }
 
+function removeShortcut(name, callback) {
+  return chrome.storage.sync.remove(name, callback); 
+}
+
 chrome.omnibox.onInputEntered.addListener(function(text) {
+  if (text == 'manage') {
+    url = chrome.extension.getURL('templates/manage_shortcuts.html');
+    navigate(url);
+    return;
+  }
   getShortcut(text, function(url_back){
     url = url_back;
     if (!url) {
       url = chrome.extension.getURL('templates/add_shortcut.html');
-      console.log(url);
     }
     navigate(url);
   });

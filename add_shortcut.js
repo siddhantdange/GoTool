@@ -1,3 +1,4 @@
+
 $(document).ready(function(){
   $('#submit_form_button').click(function(e){
     var title = $('#form_title').val();
@@ -8,6 +9,4 @@ $(document).ready(function(){
       alert('Could not update shortcuts at this time!');
     })
   });
-
-
 });
