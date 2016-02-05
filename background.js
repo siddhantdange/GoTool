@@ -12,6 +12,24 @@ function navigate(url) {
   });
 }
 
+function ChromeStorageManager() {}
+
+ChromeStorageManager.add = function(key_value_dict, success) {
+  chrome.storage.sync.set(key_value_dict, success);
+}
+
+ChromeStorageManager.getValue = function(key, callback) {
+  return chrome.storage.sync.get(key, callback);
+}
+
+ChromeStorageManager.getAllKeyValuePairs = function(callback) {
+  return chrome.storage.sync.get(null, callback);
+}
+
+ChromeStorageManager.removeKey = function(key, callback) {
+  return chrome.storage.sync.remove(key, callback);
+}
+
 function saveShortcut(title, url, success, error) {
 
    if (!title || !url) {
@@ -24,15 +42,12 @@ function saveShortcut(title, url, success, error) {
 
    var pack = {};
    pack[title] = url;
-   chrome.storage.sync.set(pack, function() {
-     if (success) {
-       success();
-     }
-   });
+
+   ChromeStorageManager.add(pack, success);
 }
 
 function getShortcut(title, callback) {
-  return chrome.storage.sync.get(title, function(url_dict) {
+  return ChromeStorageManager.getValue(title, function(url_dict) {
     var len = Object.keys(url_dict).length;
     if (!len) {
       if (callback) {
@@ -48,15 +63,11 @@ function getShortcut(title, callback) {
 }
 
 function getAllShortcuts(callback) {
-  return chrome.storage.sync.get(null, function(url_dict) {
-    if (callback) {
-      callback(url_dict);
-    }
-  });
+  return ChromeStorageManager.getAllKeyValuePairs(callback);
 }
 
 function removeShortcut(title, callback) {
-  return chrome.storage.sync.remove(title, callback);
+  return ChromeStorageManager.removeKey(title, callback);
 }
 
 chrome.omnibox.onInputEntered.addListener(function(text) {
