@@ -20,3 +20,10 @@ html {
   display:block;
   margin: auto;
 }
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none;
+}

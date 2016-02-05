@@ -9,7 +9,6 @@ input {
   border-style: solid;
   text-align: center;
 
-
   font-family: 'Gill Sans';
   font-weight: normal;
   font-size: 1.5em;
@@ -20,9 +19,26 @@ input[type=text] {
   height: 50px;
   width: 50%;
   float: left;
+  color: black;
 }
 
 #inputBox {
   height: 50px;
   width: 60%;
+}
+
+::-webkit-input-placeholder {
+  color: #88B3CC;
+}
+
+:-moz-placeholder {
+  color: #88B3CC;
+}
+
+::-moz-placeholder {
+  color: #88B3CC;
+}
+
+:-ms-input-placeholder {
+  color: #88B3CC;
 }
