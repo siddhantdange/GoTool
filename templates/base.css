@@ -1,0 +1,22 @@
+
+html {
+  height: 100%;
+  min-width: 100%;
+  background-color: #2F627F;
+
+  font-family: 'Gill Sans';
+  font-weight: lighter;
+  color: #88B3CC;
+}
+
+#pageTitle {
+  font-weight: lighter;
+  text-align: center;
+  margin-top: 120px;
+  font-size: 3em;
+}
+
+.horizontalCenter {
+  display:block;
+  margin: auto;
+}

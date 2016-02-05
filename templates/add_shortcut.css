@@ -1,0 +1,28 @@
+
+input {
+  display: inline-block;
+
+  background-color: rgb(215,242,251);
+  border-radius: 5px;
+  border-color: #55707F;
+  border-width: 1px;
+  border-style: solid;
+  text-align: center;
+
+
+  font-family: 'Gill Sans';
+  font-weight: normal;
+  font-size: 1.5em;
+  color: #88B3CC;
+}
+
+input[type=text] {
+  height: 50px;
+  width: 50%;
+  float: left;
+}
+
+#inputBox {
+  height: 50px;
+  width: 60%;
+}

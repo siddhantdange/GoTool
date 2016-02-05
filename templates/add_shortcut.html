@@ -4,10 +4,16 @@
     <script src="../background.js"></script>
     <script src="../jquery.js"></script>
     <script src="../add_shortcut.js"></script>
+    <link rel="stylesheet" type="text/css" href="base.css">
+    <link rel="stylesheet" type="text/css" href="add_shortcut.css">
   </head>
+  <title>GoTool: Add</title>
 
-  <h1>Add Shortcut!</h1>
-  <input type="text" id="form_title" placeholder="title"><br>
-  <input type="text" id="form_url" placeholder="full url"><br>
-  <input type="submit" value="Add and Go!" id="submit_form_button">
+  <h1 id='pageTitle'>ADD SHORTCUT</h1>
+  <div id='inputBox' class='horizontalCenter'>
+    <input type="text" id="form_title" placeholder="TITLE">
+    <input type="text" id="form_url" placeholder="FULL URL">
+  </div>
+  <br />
+  <input type="submit" value="Add and Go!" id="submit_form_button" class="horizontalCenter">
 </html>
