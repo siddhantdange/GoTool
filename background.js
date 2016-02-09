@@ -30,9 +30,30 @@ ChromeStorageManager.removeKey = function(key, callback) {
   return chrome.storage.sync.remove(key, callback);
 }
 
-function saveShortcut(title, url, success, error) {
+ChromeStorageManager.getUrlForResourcePath = function(resPath, query) {
+  if (query) {
+    var queryStr = ''
+    var keys = Object.keys(query);
+    for (var idx in keys) {
+      var key = keys[idx];
+      queryStr += '&' + key + '=' + query[key];
+    }
 
-   if (!title || !url) {
+    if (queryStr && queryStr.length) {
+      resPath += '?' + queryStr;
+    }
+  }
+
+  return chrome.extension.getURL(resPath);
+}
+
+function Shortcut(title, url) {
+  this.title = title;
+  this.url = url;
+}
+
+Shortcut.prototype.save = function(success, error) {
+   if (!this.title || !this.url) {
      if (error) {
        error('Error: No value specified');
      }
@@ -41,46 +62,61 @@ function saveShortcut(title, url, success, error) {
    }
 
    var pack = {};
-   pack[title] = url;
+   pack[this.title] = this.url;
 
    ChromeStorageManager.add(pack, success);
 }
 
-function getShortcut(title, callback) {
+Shortcut.prototype.remove = function(callback) {
+  return ChromeStorageManager.removeKey(this.title, callback);
+}
+
+function ShortcutFactory() {}
+
+ShortcutFactory.getShortcut = function(title, callback) {
   return ChromeStorageManager.getValue(title, function(url_dict) {
     var len = Object.keys(url_dict).length;
     if (!len) {
       if (callback) {
-        callback(null);
+        return callback(null);
       }
       return;
     }
 
     if (callback) {
-      callback(url_dict[title]);
+      var shortcut = new Shortcut(title, url_dict[title]);
+      return callback(shortcut);
     }
   });
 }
 
-function getAllShortcuts(callback) {
-  return ChromeStorageManager.getAllKeyValuePairs(callback);
-}
+ShortcutFactory.getAllShortcuts = function (callback) {
+  return ChromeStorageManager.getAllKeyValuePairs(function(shortcut_raw_dict){
+    var titles = Object.keys(shortcut_raw_dict);
+    var shortcuts = [];
+    for (var i = 0; i < titles.length; i+=1) {
+      var title = titles[i];
+      var url = shortcut_raw_dict[title];
+      var shortcut = new Shortcut(title, url);
+      shortcuts.push(shortcut);
+    }
 
-function removeShortcut(title, callback) {
-  return ChromeStorageManager.removeKey(title, callback);
+    callback(shortcuts);
+  });
 }
 
 chrome.omnibox.onInputEntered.addListener(function(text) {
   if (text == 'manage') {
-    url = chrome.extension.getURL('templates/manage_shortcuts.html');
-    navigate(url);
-    return;
+    url = ChromeStorageManager.getUrlForResourcePath('templates/manage_shortcuts.html', null);
+    return navigate(url);
   }
-  getShortcut(text, function(url_back){
-    url = url_back;
-    if (!url) {
-      url = chrome.extension.getURL('templates/add_shortcut.html?title=' + text);
-    }
-    navigate(url);
+
+  ShortcutFactory.getShortcut(text, function(shortcut) {
+    url = (shortcut) ? shortcut.url : ChromeStorageManager.getUrlForResourcePath(
+                                       'templates/add_shortcut.html',
+                                       { title : text }
+                                      );
+
+    return navigate(url);
   });
 });
