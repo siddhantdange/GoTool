@@ -18,10 +18,18 @@ To Install:
 Usage:
 ------
 
-Type in 'go' and hit tab => GoTool is activated. Type in a shortcut name and hit enter. 
+###Enter GoTool Mode:
+Type in 'go' in the top search bar and hit the 'tab' button
 
-If that shortcut has not been made, you will be directed to an 'add shortcut' page. Once that shortcut has been made, entering GoTol mode and typing in the same title will lead to the saved page. 
+###To Add Shortcut:
+1. Navigate to the website you want to add
+2. Enter GoTool Mode
+3. type in 'add' and hit the 'enter' button
 
+### Use Shortcuts:
+Type in 'go' and hit tab => GoTool is activated. Type in a shortcut name and hit enter 
+
+### Manage Shortcuts:
 To edit shortcuts, enter GoTool mode and search with 'manage'. There you will be able to see all your shortcuts and delete them.
 
 Enjoy!

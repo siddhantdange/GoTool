@@ -15,6 +15,11 @@ $(document).ready(function(){
     $('#form_title').val(title);
   }
 
+  var url = getParameterByName("url");
+  if (url) {
+    $('#form_url').val(url);
+  }
+
   $('#submit_form_button').click(function(e) {
     var title = $('#form_title').val();
     var url = $('#form_url').val();

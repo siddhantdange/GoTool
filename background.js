@@ -111,12 +111,25 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
     return navigate(url);
   }
 
-  ShortcutFactory.getShortcut(text, function(shortcut) {
-    url = (shortcut) ? shortcut.url : ChromeStorageManager.getUrlForResourcePath(
-                                       'templates/add_shortcut.html',
-                                       { title : text }
-                                      );
+  if (text == 'add') {
+    return chrome.tabs.query({
+      'active': true,
+      'lastFocusedWindow': true,
+      'currentWindow': true
+    }, function (tabs) {
+      var url = tabs[0].url;
+      var add_shortcut_url = ChromeStorageManager.getUrlForResourcePath('templates/add_shortcut.html',
+                                                                        { 'url' : url }
+                                                                      );
+      return navigate(add_shortcut_url);
+    });
+  }
 
-    return navigate(url);
+  ShortcutFactory.getShortcut(text, function(shortcut) {
+    if (!shortcut) {
+      return alert('no such shortcut has been made!');
+    }
+
+    return navigate(shortcut.url);
   });
 });
