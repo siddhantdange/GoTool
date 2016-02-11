@@ -8,14 +8,8 @@
 	    "16": "icon.png"
 	  },
 	  "background": {
-	    "scripts": ["background.js"]
+	    "scripts": ["/scripts/background.js"]
 	  },
-		"content_scripts": [
-    {
-      "matches": ["https://ajax.googleapis.com/*"],
-      "js": ["jquery.js"]
-    }
-  	],
 		"permissions": [
       "storage",
       "tabs"
