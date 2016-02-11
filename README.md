@@ -32,6 +32,10 @@ Type in 'go' and hit tab => GoTool is activated. Type in a shortcut name and hit
 ### Manage Shortcuts:
 To edit shortcuts, enter GoTool mode and search with 'manage'. There you will be able to see all your shortcuts and delete them.
 
+### Help:
+1. Enter GoTool mode
+2. type in 'help' and hit the 'enter' button
+
 Enjoy!
 V.1
 

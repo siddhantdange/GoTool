@@ -125,6 +125,10 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
     });
   }
 
+  if (text == 'help') {
+    return navigate('https://github.com/siddhantdange/GoTool');
+  }
+
   ShortcutFactory.getShortcut(text, function(shortcut) {
     if (!shortcut) {
       return alert('no such shortcut has been made!');
