@@ -126,7 +126,7 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
   }
 
   if (text == 'help') {
-    return navigate('https://github.com/siddhantdange/GoTool');
+    return navigate('https://github.com/siddhantdange/GoTool#readme');
   }
 
   ShortcutFactory.getShortcut(text, function(shortcut) {
