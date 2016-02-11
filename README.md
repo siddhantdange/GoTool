@@ -2,6 +2,8 @@ GoTool
 ======
 This chrome extension tries to redefine bookmarks by allowing one to seamlessly create and navigate to shortcuts.
 
+![alt tag](https://github.com/siddhantdange/GoTool/blob/master/res/usage.gif)
+
 To Install:
 ----------- 
 
