@@ -7,7 +7,7 @@ This chrome extension tries to redefine bookmarks by allowing one to seamlessly 
 To Install:
 ----------- 
 
-1. Clone this repository into a safe location.
+1. <a href="https://github.com/siddhantdange/GoTool/archive/master.zip">Download</a> or clone this repository into a safe location.
 
 2. Open Google Chome and navigate to url: "chrome://extensions"
 
