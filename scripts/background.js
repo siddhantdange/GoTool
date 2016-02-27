@@ -47,11 +47,50 @@ ChromeStorageManager.getUrlForResourcePath = function(resPath, query) {
   return chrome.extension.getURL(resPath);
 }
 
+function APIConnector () {};
+
+APIConnector.baseURL = "https://burning-heat-1784.firebaseio.com/";
+
+APIConnector.getUsageURL = function(user_id, timestamp) {
+  var url = APIConnector.baseURL;
+  url += "usage/" + user_id + '/' + timestamp + '.json';
+  return url;
+}
+
+APIConnector.getShortcutLibraryURL = function(user_id, timestamp) {
+  var url = APIConnector.baseURL;
+  url += "shortcut_library/" + user_id + '/' + timestamp + '.json';
+  return url;
+}
+
+APIConnector.sendPUTRequest = function(url, data, callback) {
+  var http = new XMLHttpRequest();
+  http.open("PUT", url, true);
+
+  //Send the proper header information along with the request
+  http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  http.send(data);
+
+  if (callback) {
+    callback();
+  }
+}
+
+APIConnector.sendUsageData = function(data, callback) {
+  var url = APIConnector.getUsageURL(data['user_id'], data['timestamp']);
+  APIConnector.sendPUTRequest(url, JSON.stringify(data), callback);
+}
+
+APIConnector.sendShortcutLibraryData = function(data, callback) {
+  var url = APIConnector.getShortcutLibraryURL(data['user_id'], data['timestamp']);
+  APIConnector.sendPUTRequest(url, JSON.stringify(data), callback);
+}
+
 // We want to track #times/day usage
 // We want to track size of shortcut library
-function AnalyticsManager() {}
+function AnalyticsManager() {};
 
-AnalyticsManager.generate_guid = function() {
+AnalyticsManager.generateGuid = function() {
   function guid() {
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000)
@@ -65,11 +104,11 @@ AnalyticsManager.generate_guid = function() {
   return guid();
 }
 
-AnalyticsManager.get_user_id = function(callback) {
+AnalyticsManager.getUserId = function(callback) {
    ChromeStorageManager.getValue('user_id', function(user_id) {
 
      if (!Object.keys(user_id).length) {
-       user_id = AnalyticsManager.generate_guid();
+       user_id = AnalyticsManager.generateGuid();
        ChromeStorageManager.add({
          'user_id' : user_id
        });
@@ -79,8 +118,14 @@ AnalyticsManager.get_user_id = function(callback) {
    });
 }
 
+AnalyticsManager.getShortcutLibraryLength = function(callback) {
+  ShortcutFactory.getAllShortcuts(function(shortcuts) {
+    callback(shortcuts.length);
+  });
+}
+
 AnalyticsManager.createUsagePacket = function(callback) {
-  AnalyticsManager.get_user_id(function(uuid) {
+  AnalyticsManager.getUserId(function(uuid) {
     var usage_packet = {
       user_id : uuid,
       timestamp : Date.now(),
@@ -91,22 +136,30 @@ AnalyticsManager.createUsagePacket = function(callback) {
   });
 }
 
-AnalyticsManager.log_usage = function() {
+AnalyticsManager.createShortcutLibraryDataPacket = function(callback) {
+  AnalyticsManager.getUserId(function(uuid) {
+    AnalyticsManager.getShortcutLibraryLength(function(num_shortcuts) {
+      var library_packet = {
+        user_id : uuid,
+        timestamp : Date.now(),
+        shortcut_library_length : num_shortcuts,
+        packet_type: 'SHORTCUT_LIBRARY'
+      }
+
+      callback(library_packet);
+    });
+  });
+}
+
+AnalyticsManager.logUsage = function(callback) {
   AnalyticsManager.createUsagePacket(function(usage_packet) {
-    // post to firebase
-    console.log(JSON.stringify(usage_packet));
-    var http = new XMLHttpRequest();
-    var url = "https://burning-heat-1784.firebaseio.com/usage/";
-    url +=  usage_packet['user_id'];
-    url += '/' + usage_packet['timestamp'];
-    url += '.json';
+    APIConnector.sendUsageData(usage_packet, callback);
+  });
+}
 
-    var params = JSON.stringify(usage_packet);
-    http.open("PUT", url, true);
-
-    //Send the proper header information along with the request
-    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    http.send(params);
+AnalyticsManager.logShortcutLibraryData = function(callback) {
+  AnalyticsManager.createShortcutLibraryDataPacket(function(data_packet) {
+    APIConnector.sendShortcutLibraryData(data_packet, callback);
   });
 }
 
@@ -156,7 +209,7 @@ ShortcutFactory.getShortcut = function(title, callback) {
 }
 
 ShortcutFactory.getAllShortcuts = function (callback) {
-  return ChromeStorageManager.getAllKeyValuePairs(function(shortcut_raw_dict){
+  return ChromeStorageManager.getAllKeyValuePairs(function(shortcut_raw_dict) {
     var titles = Object.keys(shortcut_raw_dict);
     var shortcuts = [];
     for (var i = 0; i < titles.length; i+=1) {
@@ -171,6 +224,7 @@ ShortcutFactory.getAllShortcuts = function (callback) {
 }
 
 chrome.omnibox.onInputEntered.addListener(function(text) {
+
   if (text == 'manage') {
     url = ChromeStorageManager.getUrlForResourcePath('templates/manage_shortcuts.html', null);
     return navigate(url);
@@ -199,7 +253,7 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
       return alert('no such shortcut has been made!');
     }
 
-    AnalyticsManager.log_usage();
+    AnalyticsManager.logUsage();
 
     return navigate(shortcut.url);
   });

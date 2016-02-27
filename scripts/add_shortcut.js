@@ -26,10 +26,12 @@ $(document).ready(function(){
 
     var shortcut = new Shortcut(title, url);
 
-    shortcut.save(function() {
-      navigate(url);
-    }, function() {
-      alert('Could not update shortcuts at this time!');
+    AnalyticsManager.logShortcutLibraryData(function() {
+      shortcut.save(function() {
+        navigate(url);
+      }, function() {
+        alert('Could not update shortcuts at this time!');
+      });
     });
   });
 });
