@@ -47,6 +47,69 @@ ChromeStorageManager.getUrlForResourcePath = function(resPath, query) {
   return chrome.extension.getURL(resPath);
 }
 
+// We want to track #times/day usage
+// We want to track size of shortcut library
+function AnalyticsManager() {}
+
+AnalyticsManager.generate_guid = function() {
+  function guid() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
+  }
+
+  return guid();
+}
+
+AnalyticsManager.get_user_id = function(callback) {
+   ChromeStorageManager.getValue('user_id', function(user_id) {
+
+     if (!Object.keys(user_id).length) {
+       user_id = AnalyticsManager.generate_guid();
+       ChromeStorageManager.add({
+         'user_id' : user_id
+       });
+     }
+
+     callback(user_id['user_id']);
+   });
+}
+
+AnalyticsManager.createUsagePacket = function(callback) {
+  AnalyticsManager.get_user_id(function(uuid) {
+    var usage_packet = {
+      user_id : uuid,
+      timestamp : Date.now(),
+      packet_type: 'USAGE'
+    }
+
+    callback(usage_packet);
+  });
+}
+
+AnalyticsManager.log_usage = function() {
+  AnalyticsManager.createUsagePacket(function(usage_packet) {
+    // post to firebase
+    console.log(JSON.stringify(usage_packet));
+    var http = new XMLHttpRequest();
+    var url = "https://burning-heat-1784.firebaseio.com/usage/";
+    url +=  usage_packet['user_id'];
+    url += '/' + usage_packet['timestamp'];
+    url += '.json';
+
+    var params = JSON.stringify(usage_packet);
+    http.open("PUT", url, true);
+
+    //Send the proper header information along with the request
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.send(params);
+  });
+}
+
 function Shortcut(title, url) {
   this.title = title;
   this.url = url;
@@ -64,7 +127,9 @@ Shortcut.prototype.save = function(success, error) {
    var pack = {};
    pack[this.title] = this.url;
 
-   ChromeStorageManager.add(pack, success);
+   ChromeStorageManager.add(pack, function() {
+     success();
+   });
 }
 
 Shortcut.prototype.remove = function(callback) {
@@ -133,6 +198,8 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
     if (!shortcut) {
       return alert('no such shortcut has been made!');
     }
+
+    AnalyticsManager.log_usage();
 
     return navigate(shortcut.url);
   });
