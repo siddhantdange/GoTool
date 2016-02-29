@@ -51,15 +51,21 @@ function APIConnector () {};
 
 APIConnector.baseURL = "https://burning-heat-1784.firebaseio.com/";
 
+APIConnector.timestampDayForTimestamp = function(timestamp) {
+  return timestamp - (timestamp % 86400000);
+}
+
 APIConnector.getUsageURL = function(user_id, timestamp) {
   var url = APIConnector.baseURL;
-  url += "usage/" + user_id + '/' + timestamp + '.json';
+  var ts_by_day = APIConnector.timestampDayForTimestamp(timestamp);
+  url += "usage/" + user_id + '/' + ts_by_day + '/' + timestamp + '.json';
   return url;
 }
 
 APIConnector.getShortcutLibraryURL = function(user_id, timestamp) {
   var url = APIConnector.baseURL;
-  url += "shortcut_library/" + user_id + '/' + timestamp + '.json';
+  var ts_by_day = APIConnector.timestampDayForTimestamp(timestamp);
+  url += "shortcut_library/" + user_id + '/' + ts_by_day + '/' + timestamp + '.json';
   return url;
 }
 
@@ -71,7 +77,8 @@ APIConnector.getUserDataURL = function(user_id) {
 
 APIConnector.getPlatformActionDataURL = function(user_id, timestamp) {
   var url = APIConnector.baseURL;
-  url += 'platform_action/' + user_id + '/' + timestamp + '.json';
+  var ts_by_day = APIConnector.timestampDayForTimestamp(timestamp);
+  url += 'platform_action/' + user_id + '/' + ts_by_day + '/' + timestamp + '.json';
   return url;
 }
 
@@ -305,7 +312,7 @@ ShortcutFactory.getAllShortcuts = function (callback) {
       if (title == 'user_id') {
         continue;
       }
-      
+
       var url = shortcut_raw_dict[title];
       var shortcut = new Shortcut(title, url);
       shortcuts.push(shortcut);
