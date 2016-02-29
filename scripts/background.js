@@ -302,6 +302,10 @@ ShortcutFactory.getAllShortcuts = function (callback) {
     var shortcuts = [];
     for (var i = 0; i < titles.length; i+=1) {
       var title = titles[i];
+      if (title == 'user_id') {
+        continue;
+      }
+      
       var url = shortcut_raw_dict[title];
       var shortcut = new Shortcut(title, url);
       shortcuts.push(shortcut);
