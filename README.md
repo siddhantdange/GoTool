@@ -38,6 +38,9 @@ To edit shortcuts, enter GoTool mode and search with 'manage'. There you will be
 1. Enter GoTool mode
 2. type in 'help' and hit the 'enter' button
 
+### Disclosure:
+Each installation has logging built in, however, no personal data or shortcut names/urls are ever tracked.
+
 Enjoy!
 V.1
 
