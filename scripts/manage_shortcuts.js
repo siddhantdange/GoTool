@@ -6,7 +6,7 @@ Shortcut.prototype.getDomObject = function() {
                         .append($('<div>').append($('<img>').attr({src:'../res/x.png'}))
                                           .attr({class:'shortcutDiv deleteDiv'})
                                           .click(function(e){
-                                            AnalyticsManager.logShortcutLibraryData();
+                                            AnalyticsManager.logShortcutLibraryData(null);
                                             self_shortcut.remove();
                                             $(this).parent().remove();
                                           }));

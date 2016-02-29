@@ -63,6 +63,18 @@ APIConnector.getShortcutLibraryURL = function(user_id, timestamp) {
   return url;
 }
 
+APIConnector.getUserDataURL = function(user_id) {
+  var url = APIConnector.baseURL;
+  url += 'users/' + user_id + '.json';
+  return url;
+}
+
+APIConnector.getPlatformActionDataURL = function(user_id, timestamp) {
+  var url = APIConnector.baseURL;
+  url += 'platform_action/' + user_id + '/' + timestamp + '.json';
+  return url;
+}
+
 APIConnector.sendPUTRequest = function(url, data, callback) {
   var http = new XMLHttpRequest();
   http.open("PUT", url, true);
@@ -70,9 +82,14 @@ APIConnector.sendPUTRequest = function(url, data, callback) {
   //Send the proper header information along with the request
   http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   http.send(data);
+  //alert(data);
 
-  if (callback) {
-    callback();
+  http.onreadystatechange = function(state) {
+    if (http.readyState == XMLHttpRequest.DONE) {
+      if (callback) {
+        callback();
+      }
+    }
   }
 }
 
@@ -83,6 +100,16 @@ APIConnector.sendUsageData = function(data, callback) {
 
 APIConnector.sendShortcutLibraryData = function(data, callback) {
   var url = APIConnector.getShortcutLibraryURL(data['user_id'], data['timestamp']);
+  APIConnector.sendPUTRequest(url, JSON.stringify(data), callback);
+}
+
+APIConnector.sendUserData = function(data, callback) {
+  var url = APIConnector.getUserDataURL(data['user_id']);
+  APIConnector.sendPUTRequest(url, JSON.stringify(data), callback);
+}
+
+APIConnector.sendPlatformActionData = function(data, callback) {
+  var url = APIConnector.getPlatformActionDataURL(data['user_id'], data['timestamp']);
   APIConnector.sendPUTRequest(url, JSON.stringify(data), callback);
 }
 
@@ -108,19 +135,26 @@ AnalyticsManager.getUserId = function(callback) {
    ChromeStorageManager.getValue('user_id', function(user_id) {
 
      if (!Object.keys(user_id).length) {
-       user_id = AnalyticsManager.generateGuid();
-       ChromeStorageManager.add({
-         'user_id' : user_id
-       });
+       u_id = AnalyticsManager.generateGuid();
+       user_id = {
+         'user_id' : u_id
+       }
+
+       AnalyticsManager.logUserData(user_id['user_id'], null);
+       ChromeStorageManager.add(user_id);
      }
 
-     callback(user_id['user_id']);
+     if (callback) {
+       callback(user_id['user_id']);
+     }
    });
 }
 
 AnalyticsManager.getShortcutLibraryLength = function(callback) {
   ShortcutFactory.getAllShortcuts(function(shortcuts) {
-    callback(shortcuts.length);
+    if (callback) {
+      callback(shortcuts.length);
+    }
   });
 }
 
@@ -132,7 +166,9 @@ AnalyticsManager.createUsagePacket = function(callback) {
       packet_type: 'USAGE'
     }
 
-    callback(usage_packet);
+    if (callback) {
+      callback(usage_packet);
+    }
   });
 }
 
@@ -146,8 +182,38 @@ AnalyticsManager.createShortcutLibraryDataPacket = function(callback) {
         packet_type: 'SHORTCUT_LIBRARY'
       }
 
-      callback(library_packet);
+      if (callback) {
+        callback(library_packet);
+      }
     });
+  });
+}
+
+AnalyticsManager.createUserDataPacket = function(uuid, callback) {
+  var user_data_packet = {
+    user_id : uuid,
+    timestamp : Date.now(),
+    user_agent : window.navigator.userAgent,
+    packet_type: 'USER_DATA'
+  }
+
+  if (callback) {
+    callback(user_data_packet);
+  }
+}
+
+AnalyticsManager.createPlatformActionDataPacket = function(action, callback) {
+  AnalyticsManager.getUserId(function(uuid) {
+    var platform_action_data_packet = {
+      user_id : uuid,
+      timestamp : Date.now(),
+      action_type : action,
+      packet_type: 'PLATFORM_ACTION'
+    }
+
+    if (callback) {
+      callback(platform_action_data_packet);
+    }
   });
 }
 
@@ -161,6 +227,30 @@ AnalyticsManager.logShortcutLibraryData = function(callback) {
   AnalyticsManager.createShortcutLibraryDataPacket(function(data_packet) {
     APIConnector.sendShortcutLibraryData(data_packet, callback);
   });
+}
+
+AnalyticsManager.logUserData = function(uuid, callback) {
+  AnalyticsManager.createUserDataPacket(uuid, function(user_data_packet){
+    APIConnector.sendUserData(user_data_packet, callback);
+  });
+}
+
+AnalyticsManager.logPlatformActionData = function(action, callback) {
+  AnalyticsManager.createPlatformActionDataPacket(action, function(platform_action_data_packet) {
+    APIConnector.sendPlatformActionData(platform_action_data_packet, callback);
+  });
+}
+
+AnalyticsManager.logHelpAction = function(callback) {
+  AnalyticsManager.logPlatformActionData('HELP_ACTION', callback);
+}
+
+AnalyticsManager.logManageAction = function(callback) {
+  AnalyticsManager.logPlatformActionData('MANAGE_ACTION', callback);
+}
+
+AnalyticsManager.logAddAction = function(callback) {
+  AnalyticsManager.logPlatformActionData('ADD_ACTION', callback);
 }
 
 function Shortcut(title, url) {
@@ -180,9 +270,7 @@ Shortcut.prototype.save = function(success, error) {
    var pack = {};
    pack[this.title] = this.url;
 
-   ChromeStorageManager.add(pack, function() {
-     success();
-   });
+   ChromeStorageManager.add(pack, success);
 }
 
 Shortcut.prototype.remove = function(callback) {
@@ -226,11 +314,15 @@ ShortcutFactory.getAllShortcuts = function (callback) {
 chrome.omnibox.onInputEntered.addListener(function(text) {
 
   if (text == 'manage') {
+    AnalyticsManager.logManageAction(null);
+
     url = ChromeStorageManager.getUrlForResourcePath('templates/manage_shortcuts.html', null);
     return navigate(url);
   }
 
   if (text == 'add') {
+    AnalyticsManager.logAddAction(null);
+
     return chrome.tabs.query({
       'active': true,
       'lastFocusedWindow': true,
@@ -245,7 +337,9 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
   }
 
   if (text == 'help') {
-    return navigate('https://github.com/siddhantdange/GoTool#readme');
+    return AnalyticsManager.logHelpAction(function() {
+      navigate('https://github.com/siddhantdange/GoTool#readme');
+    });
   }
 
   ShortcutFactory.getShortcut(text, function(shortcut) {
@@ -253,7 +347,7 @@ chrome.omnibox.onInputEntered.addListener(function(text) {
       return alert('no such shortcut has been made!');
     }
 
-    AnalyticsManager.logUsage();
+    AnalyticsManager.logUsage(null);
 
     return navigate(shortcut.url);
   });
